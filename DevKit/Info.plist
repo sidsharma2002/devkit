@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <!-- No dock icon — runs silently in background -->
+    <key>LSUIElement</key>
+    <true/>
+
+    <key>CFBundleName</key>
+    <string>DevKit</string>
+
+    <key>CFBundleIdentifier</key>
+    <string>com.yourteam.devkit</string>
+
+    <key>CFBundleVersion</key>
+    <string>1</string>
+
+    <key>CFBundleShortVersionString</key>
+    <string>0.1.0</string>
+
+    <!-- Required: explains why Accessibility access is needed -->
+    <key>NSAccessibilityUsageDescription</key>
+    <string>DevKit monitors keystrokes to detect ::format commands and replaces text in the active input field.</string>
+</dict>
+</plist>
