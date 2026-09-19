@@ -1,160 +1,198 @@
 # DevKit
 
-macOS productivity tools for developers — keyboard-driven, Claude-powered.
+**AI writing tools built for developers. Keyboard-only. Zero context switching.**
 
-## Tools
+You write fast, messy, and technical. DevKit rewrites it — into a polished message, a clear incident update, or a full MR description — without you ever leaving the keyboard.
 
-| Tool | What it does |
-|------|-------------|
-| **DevKit.app** | System-wide text formatter — select messy text, pick a tone, Claude rewrites it |
-| **give-mr-desc** | Auto-generates MR descriptions from git diff + commit history |
+---
 
-## Prerequisites
+## The Problem
 
-- macOS 12 or later
-- Xcode Command Line Tools: `xcode-select --install`
-- Claude Code CLI installed and authenticated: https://claude.ai/download
+You spend more time than you should on:
 
-`install.sh` fails with a clear error if any prerequisite is missing.
+- Rewriting a messy Slack/Lark message so it doesn't sound alarming
+- Translating a stack trace into something a PM can understand
+- Filling out an MR description from scratch after already writing the code
+
+These aren't hard problems. They're just friction. DevKit removes them.
+
+---
+
+## What's Inside
+
+### DevKit.app — System-wide Text Formatter
+
+Select any text. Press a hotkey. Pick a tone. Claude rewrites it inline.
+
+Works in **any app** — Lark, Terminal, Notes, browser, IDE.
+
+**Before:**
+```
+hey so payment service is down again prod is affected users cant checkout looked at logs nothing obvious yet
+```
+
+**After (Formal):**
+```
+Incident Report | Severity: P0
+
+- Summary: Payment service is currently unavailable in production
+- Impact: Users unable to complete checkout
+- Status: Under investigation — no root cause identified yet
+- Action Required: Payments team to review service logs
+```
+
+**After (Direct):**
+```
+Payment service is down in prod. Payments team — investigate logs immediately.
+```
+
+**After (Diplomatic):**
+```
+Hey team, just a heads up — we're seeing some instability with the payment service in production.
+Users are hitting checkout issues. Would appreciate a look from the payments side when you can.
+```
+
+Five tones built-in. All keyboard navigable. No mouse.
+
+---
+
+### give-mr-desc — MR Description Generator
+
+Run one command after `git push`. Claude reads your diff and commit history and writes the MR description for you.
+
+```bash
+give-mr-desc
+```
+
+```markdown
+## What
+Adds retry logic to the payment processor with exponential backoff, capped at 3 attempts.
+
+## Why
+Transient network failures were causing hard failures on the first attempt, leading to
+unnecessary checkout errors under intermittent connectivity.
+
+## Changes
+- Add `RetryHandler` with configurable attempt count and backoff multiplier
+- Wrap `PaymentProcessor.charge()` calls with retry logic
+- Add unit tests for retry behaviour under simulated failure
+
+## Testing
+Run `./gradlew :payments:test` — all existing tests pass, 6 new tests added.
+```
+
+No template to fill. No copy-pasting commit messages. Just ship.
+
+---
 
 ## Install
 
-### One-liner (no clone needed)
+**One command:**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sidsharma2002/devkit/main/devkit-poc/bootstrap.sh | bash
 ```
 
-Clones the repo to a temp directory, compiles DevKit.app, installs to `~/Applications/DevKit.app`, registers a LaunchAgent for auto-start on login, and installs `give-mr-desc` to your PATH.
+Installs DevKit.app and `give-mr-desc` in one shot.
 
-### Just give-mr-desc (no Xcode required)
+**Just the MR generator (no Xcode needed):**
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/sidsharma2002/devkit/main/devkit-poc/mrkit/give-mr-desc \
   -o ~/.local/bin/give-mr-desc && chmod +x ~/.local/bin/give-mr-desc
 ```
 
-### Manual (after cloning)
+---
 
-```bash
-cd devkit-poc && bash install.sh
+## Requirements
+
+- macOS 12+
+- [Claude Code CLI](https://claude.ai/download) — authenticated
+- Xcode Command Line Tools (`xcode-select --install`) — only for DevKit.app
+
+---
+
+## Usage
+
+### Text Formatter — Two Ways to Trigger
+
+**Inline trigger** — type in any text field and press `Tab`:
+```
+::format <your messy text here>
 ```
 
-## Grant Accessibility Permission (required after every install)
+**Hotkey** — select any existing text, press `Cmd+Shift+\`
 
-macOS revokes Accessibility permission whenever the binary is recompiled.
+### Tone Picker
+
+| Key | Action |
+|-----|--------|
+| `↑` `↓` | Navigate |
+| `Return` | Rewrite + paste |
+| `Esc` | Cancel |
+
+### Available Tones
+
+| Tone | Best for |
+|------|----------|
+| Formal | Incident reports, status updates |
+| Diplomatic | Feedback, blame-free updates |
+| Direct | Engineering pings, on-call alerts |
+| Management | Executive summaries, stakeholder updates |
+| Junior-friendly | Onboarding help, explaining outages |
+
+### MR Description Generator
+
+```bash
+# From inside any git repo
+give-mr-desc
+```
+
+Custom template? Create `~/.config/devkit/mr-template.md` with your own structure — DevKit picks it up automatically.
+
+---
+
+## After Install — Grant Accessibility (DevKit.app only)
+
+macOS requires Accessibility permission for DevKit to intercept keystrokes.
 
 1. System Settings > Privacy & Security > Accessibility
-2. If DevKit is listed — toggle OFF then ON
-3. If not listed — click `+`, press `Cmd+Shift+G`, type `~/Applications/`, select `DevKit.app`, toggle ON
+2. Find DevKit — toggle OFF then ON (or add via `+` if not listed)
 
 Verify:
 ```bash
 tail -f /tmp/devkit.log
-# Expected: [DevKit] Keystroke monitor active.
+# [DevKit] Keystroke monitor active.
 ```
 
 ---
 
-## DevKit.app — Text Formatter
-
-### Mode 1 — `::format` trigger
-
-Type in any text field (Lark, Terminal, Notes, browser):
-```
-::format payment service is down prod users cant checkout
-```
-Press `Tab` — tone picker appears.
-
-### Mode 2 — Global hotkey
-
-1. Type messy text anywhere
-2. Select it (`Cmd+A` or `Shift+arrows`)
-3. Press `Cmd+Shift+\`
-4. Tone picker appears
-
-### Tone picker controls
-
-| Key | Action |
-|-----|--------|
-| `↑` `↓` | Navigate tones |
-| `Return` | Confirm — replaces text |
-| `Esc` | Cancel |
-
-### Available tones
-
-| Tone | Output |
-|------|--------|
-| Formal | Structured incident report |
-| Diplomatic | Warm, blame-free update |
-| Direct | Two sentences, no fluff |
-| Management | Executive summary with impact |
-| Junior-friendly | Plain English, step-by-step |
-
----
-
-## give-mr-desc — MR Description Generator
-
-Run from inside any git repo:
-```bash
-give-mr-desc
-```
-
-Claude reads the diff and commit history itself and prints a filled-in MR description to the terminal.
-
-### Custom template
-
-Create `~/.config/devkit/mr-template.md` with any structure you want:
-
-```markdown
-## Summary
-[what changed]
-
-## Motivation
-[why]
-
-## Risk
-[low / medium / high — and why]
-```
-
-`give-mr-desc` picks it up automatically. Delete the file to revert to the default template.
-
----
-
-## Logs
+## Troubleshooting
 
 ```bash
-tail -f /tmp/devkit.log      # live
-cat /tmp/devkit.log          # one-time
-```
+# Live logs
+tail -f /tmp/devkit.log
 
-## Restart / Reinstall
-
-```bash
-# Full reinstall
-bash install.sh
-
-# Restart without recompiling
-pkill -x DevKit && open ~/Applications/DevKit.app
-
-# Check running
+# Is DevKit running?
 pgrep -x DevKit
 
-# Check LaunchAgent
-launchctl list com.yourteam.devkit
+# Restart without reinstalling
+pkill -x DevKit && open ~/Applications/DevKit.app
+
+# Full reinstall
+bash devkit-poc/install.sh
 ```
 
-## File reference
+---
+
+## File Reference
 
 | File | Role |
 |------|------|
-| `DevKit/main.swift` | NSApplication entry |
-| `DevKit/AppDelegate.swift` | Startup, Accessibility permission polling |
-| `DevKit/KeystrokeMonitor.swift` | CGEventTap — detects `::format` + Tab and `Cmd+Shift+\` |
-| `DevKit/TonePickerPanel.swift` | Floating NSPanel, keyboard-navigable tone list |
-| `DevKit/TextReplacer.swift` | Clipboard inject — Cmd+A+V or Cmd+V |
-| `DevKit/PopHandler.swift` | Copies selection via Cmd+C, triggers POP picker |
-| `DevKit/AIStub.swift` | Claude CLI subprocess runner — per-tone prompts, async |
-| `mrkit/give-mr-desc` | MR description generator script |
-| `mrkit/install.sh` | Installs give-mr-desc to PATH |
-| `install.sh` | Compile + bundle + sign + LaunchAgent + mrkit install |
+| `DevKit/KeystrokeMonitor.swift` | CGEventTap — detects triggers and hotkey |
+| `DevKit/TonePickerPanel.swift` | Floating picker panel, keyboard nav |
+| `DevKit/TextReplacer.swift` | Clipboard inject and paste |
+| `DevKit/AIStub.swift` | Claude CLI subprocess runner |
+| `mrkit/give-mr-desc` | MR description generator |
+| `install.sh` | Compile + bundle + LaunchAgent + mrkit |
+| `bootstrap.sh` | One-liner remote install |
