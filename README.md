@@ -22,7 +22,7 @@ macOS productivity tools for developers — keyboard-driven, Claude-powered.
 ### One-liner (no clone needed)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/devkit-poc/bootstrap.sh | bash
+curl -fsSL https://raw.githubusercontent.com/sidsharma2002/devkit/main/devkit-poc/bootstrap.sh | bash
 ```
 
 Clones the repo to a temp directory, compiles DevKit.app, installs to `~/Applications/DevKit.app`, registers a LaunchAgent for auto-start on login, and installs `give-mr-desc` to your PATH.
@@ -30,7 +30,7 @@ Clones the repo to a temp directory, compiles DevKit.app, installs to `~/Applica
 ### Just give-mr-desc (no Xcode required)
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/YOUR_USERNAME/YOUR_REPO/main/devkit-poc/mrkit/give-mr-desc \
+curl -fsSL https://raw.githubusercontent.com/sidsharma2002/devkit/main/devkit-poc/mrkit/give-mr-desc \
   -o ~/.local/bin/give-mr-desc && chmod +x ~/.local/bin/give-mr-desc
 ```
 
