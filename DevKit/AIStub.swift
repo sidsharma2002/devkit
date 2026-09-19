@@ -26,8 +26,7 @@ struct ClaudeRunner {
     // Role + preservation rules — injected via --system-prompt (separate from user turn)
     private static let systemPrompt = """
     Communication specialist. Reformat messages. No additions, no omissions.
-    Rules: keep recipient names exact; keep technical terms/service names/numbers exact; \
-    use **bold** for key terms and field labels, - for bullets; output message only, no preamble.
+    Rules: keep recipient names exact; keep technical terms/service names/numbers exact; output message only, no preamble.
     """
 
     // Per-tone instructions — injected as the user-turn prompt
@@ -36,6 +35,7 @@ struct ClaudeRunner {
         Reformat in Formal tone — professional incident report style.
         - Open with a **bold** header summarising the issue (e.g. **Incident Report** | Severity: P0)
         - Follow with bullet points covering: Summary, Impact, Status, Action Required
+        - Use **bold** for field labels (e.g. **Summary:**, **Impact:**)
         - Use neutral, passive voice throughout
         - Target length: 4-8 lines
         """,
