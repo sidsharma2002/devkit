@@ -1,0 +1,68 @@
+#!/bin/bash
+set -e
+
+# Must be inside a git repo
+if ! git rev-parse --show-toplevel &>/dev/null 2>&1; then
+  echo "Error: not inside a git repo" >&2
+  exit 1
+fi
+
+cd "$(git rev-parse --show-toplevel)"
+
+BRANCH=$(git branch --show-current)
+
+if [ -z "$BRANCH" ]; then
+  echo "Error: could not determine current branch (detached HEAD?)" >&2
+  exit 1
+fi
+
+# Locate claude binary
+CLAUDE_PATH="${DEVKIT_CLAUDE_PATH:-}"
+if [ -z "$CLAUDE_PATH" ] || [ ! -f "$CLAUDE_PATH" ]; then
+  CLAUDE_PATH=$(command -v claude 2>/dev/null || true)
+fi
+if [ -z "$CLAUDE_PATH" ]; then
+  echo "Error: claude CLI not found. Install from https://claude.ai/download" >&2
+  exit 1
+fi
+
+# Load custom template if present, else use default
+CUSTOM_TEMPLATE="$HOME/.config/devkit/mr-template.md"
+if [ -f "$CUSTOM_TEMPLATE" ]; then
+  TEMPLATE=$(cat "$CUSTOM_TEMPLATE")
+  echo "Using custom template: $CUSTOM_TEMPLATE"
+else
+  TEMPLATE="## What
+[1-2 lines: what this MR changes]
+
+## Why
+[motivation derived from commit messages and code — do not invent]
+
+## Changes
+- [bullet per significant change]
+
+## Testing
+[how to verify this works — derive from code if possible, otherwise write \"Manual testing required\"]"
+fi
+
+echo "Generating MR description for branch: $BRANCH"
+echo ""
+
+cat << EOF | "$CLAUDE_PATH" --print \
+  --model claude-sonnet-4-6 \
+  --allowedTools "Bash(git log:git diff:git branch:git rev-parse:git merge-base:git show:git status)"
+Generate an MR (merge request) description for the current branch.
+
+Branch name: $BRANCH
+
+Steps to follow:
+1. Run: git merge-base HEAD origin/main 2>/dev/null || git merge-base HEAD origin/master 2>/dev/null
+2. Use that base commit to run: git log <base>..HEAD --oneline
+3. Run: git diff <base>..HEAD --stat
+4. Run: git diff <base>..HEAD (read the actual code changes)
+5. Use only the information from steps 2-4 — do not invent details
+
+Output ONLY the following template filled in. No preamble, no explanation, no markdown fences:
+
+$TEMPLATE
+EOF

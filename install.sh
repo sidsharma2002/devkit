@@ -106,6 +106,17 @@ launchctl load "$PLIST"
 echo ""
 echo "LaunchAgent registered — DevKit starts automatically on login."
 echo "Logs: tail -f ${LOG}"
+
+# Install mrkit (give-mr-desc)
+MRKIT_DIR="${SCRIPT_DIR}/mrkit"
+if [ -f "${MRKIT_DIR}/install.sh" ]; then
+  echo ""
+  echo "Installing mrkit (give-mr-desc)..."
+  bash "${MRKIT_DIR}/install.sh"
+else
+  echo "Warning: mrkit not found at ${MRKIT_DIR} — skipping give-mr-desc install."
+fi
+
 echo ""
 echo "On first run: grant Accessibility in"
 echo "System Settings > Privacy & Security > Accessibility > DevKit"
